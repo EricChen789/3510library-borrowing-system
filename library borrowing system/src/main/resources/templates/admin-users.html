@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="#{admin.memberMgmt}">Members</title>
+    <style>
+        :root {
+            --bg-image: url('https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=1200');
+            --block-bg: rgba(255, 255, 255, 0.92);
+            --confirm-blue: #0066cc;
+            --edit-green: #28a745;
+            --delete-red: #cc0000;
+            --text-dark: #1a1a2e;
+            --text-gray: #333333;
+        }
+        body, html { margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+        .background { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-image) no-repeat center center/cover; z-index: -1; }
+        .upper-tool-row { display: flex; justify-content: space-between; padding: 20px 35px; background: rgba(255,255,255,0.85); backdrop-filter: blur(15px); }
+        .tab-item { font-size: 18px; font-weight: 600; text-decoration: none; color: var(--text-dark); margin: 0 15px; }
+        .active-tab { color: var(--confirm-blue); border-bottom: 2px solid var(--confirm-blue); }
+        main { padding: 40px; max-width: 1200px; margin: 0 auto; }
+        .section { background: var(--block-bg); border-radius: 20px; padding: 25px; margin-bottom: 30px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid rgba(0,0,0,0.1); }
+        .btn { padding: 6px 15px; border-radius: 20px; border: none; cursor: pointer; font-weight: bold; text-decoration: none; display: inline-block; margin: 2px; font-size: 13px; }
+        .btn-view { background-color: var(--confirm-blue); color: white; }
+        .btn-edit { background-color: var(--edit-green); color: white; }
+        .btn-delete { background-color: var(--delete-red); color: white; }
+        h1, h2 { color: var(--text-dark); }
+        .admin-badge { background-color: #ffc107; color: #000; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: bold; display: inline-block; }
+        .user-badge { background-color: #6c757d; color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px; display: inline-block; }
+    </style>
+</head>
+<body>
+<div class="background"></div>
+<nav th:replace="~{fragments/nav :: navAdmin('members')}"></nav>
+<main>
+    <h1 th:text="#{admin.memberMgmt}">Member Management</h1>
+
+    <div class="section">
+        <h2 th:text="#{admin.allMembers}">All Members</h2>
+        <table>
+            <thead>
+            <tr>
+                <th th:text="#{admin.colId}">ID</th>
+                <th th:text="#{admin.colEmail}">Email</th>
+                <th th:text="#{admin.colName}">Name</th>
+                <th th:text="#{admin.colRole}">Role</th>
+                <th th:text="#{admin.actions}">Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="member : ${users}">
+                <td th:text="${member.id}">1</td>
+                <td th:text="${member.email}">email@example.com</td>
+                <td th:text="${member.fullName}">Full Name</td>
+                <td>
+                    <span th:if="${member.admin}" class="admin-badge" th:text="#{admin.roleAdmin}">Admin</span>
+                    <span th:if="${!member.admin}" class="user-badge" th:text="#{admin.roleUser}">User</span>
+                </td>
+                <td>
+                    <a th:href="@{/admin/users/view/{id}(id=${member.id})}" class="btn btn-view" th:text="#{admin.view}">View</a>
+                    <a th:href="@{/admin/users/edit/{id}(id=${member.id})}" class="btn btn-edit" th:text="#{admin.edit}">Edit</a>
+                    <a th:unless="${member.admin}" th:href="@{/admin/users/delete/{id}(id=${member.id})}" class="btn btn-delete" onclick="return confirm('Delete?')" th:text="#{admin.delete}">Delete</a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+</body>
+</html>

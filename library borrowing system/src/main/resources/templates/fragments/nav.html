@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<!-- 语言切换：使用 ?lang=，由 LocaleChangeInterceptor 处理（避免 @{...} 内嵌 ${} 导致解析/求值失败） -->
+<th:block th:fragment="langLinks">
+    <div class="lang-switch" style="display:flex;gap:10px;align-items:center;margin-right:8px;">
+        <span th:text="#{nav.language}">Language</span>
+        <a th:href="|${requestUri}?lang=en|" th:text="#{lang.en}">English</a>
+        <span>|</span>
+        <a th:href="|${requestUri}?lang=zh_CN|" th:text="#{lang.zh}">中文</a>
+    </div>
+</th:block>
+
+<nav class="upper-tool-row" th:fragment="navGuest(active)">
+    <div>
+        <a th:href="@{/}" class="tab-item" th:text="#{nav.library}">Library</a>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;">
+        <th:block th:replace="~{fragments/nav :: langLinks}"></th:block>
+        <a th:href="@{/login}" class="tab-item" th:classappend="${active == 'login'} ? 'active-tab' : null" th:text="#{nav.login}">Login</a>
+        <a th:href="@{/register}" class="tab-item" th:classappend="${active == 'register'} ? 'active-tab' : null" th:text="#{nav.register}">Register</a>
+    </div>
+</nav>
+
+<nav class="upper-tool-row" th:fragment="navUser(active)">
+    <div>
+        <a th:href="@{/search}" class="tab-item" th:classappend="${active == 'search'} ? 'active-tab' : null" th:text="#{nav.search}">Search</a>
+        <a th:href="@{/saved-list}" class="tab-item" th:classappend="${active == 'saved'} ? 'active-tab' : null" th:text="#{nav.savedList}">Saved List</a>
+        <a th:href="@{/profile}" class="tab-item" th:classappend="${active == 'profile'} ? 'active-tab' : null" th:text="#{nav.profile}">Profile</a>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;">
+        <th:block th:replace="~{fragments/nav :: langLinks}"></th:block>
+        <a th:href="@{/profile}" class="user-profile" th:text="${#strings.substring(user.fullName, 0, 1)}">U</a>
+        <a th:href="@{/logout}" class="tab-item" style="color:#cc0000;" th:text="#{nav.logout}">Logout</a>
+    </div>
+</nav>
+
+<nav class="upper-tool-row" th:fragment="navAdmin(active)">
+    <div>
+        <a th:href="@{/admin/dashboard}" class="tab-item" th:classappend="${active == 'dashboard'} ? 'active-tab' : null" th:text="#{nav.dashboard}">Dashboard</a>
+        <a th:href="@{/admin/users}" class="tab-item" th:classappend="${active == 'members'} ? 'active-tab' : null" th:text="#{nav.members}">Members</a>
+        <a th:href="@{/admin/borrows}" class="tab-item" th:classappend="${active == 'borrows'} ? 'active-tab' : null" th:text="#{nav.borrows}">Borrows</a>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;">
+        <th:block th:replace="~{fragments/nav :: langLinks}"></th:block>
+        <a th:href="@{/logout}" class="tab-item" style="color:#cc0000;" th:text="#{nav.logout}">Logout</a>
+    </div>
+</nav>
+</body>
+</html>

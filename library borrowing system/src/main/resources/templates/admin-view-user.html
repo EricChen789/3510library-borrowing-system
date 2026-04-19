@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="#{admin.memberDetails}">Member</title>
+    <style>
+        :root {
+            --bg-image: url('https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=1200');
+            --block-bg: rgba(255, 255, 255, 0.92);
+            --confirm-blue: #0066cc;
+            --overdue-red: #cc0000;
+            --text-dark: #1a1a2e;
+            --text-gray: #333333;
+        }
+        body, html { margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+        .background { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-image) no-repeat center center/cover; z-index: -1; }
+        .upper-tool-row { display: flex; justify-content: space-between; padding: 20px 35px; background: rgba(255,255,255,0.85); backdrop-filter: blur(15px); }
+        .tab-item { font-size: 18px; font-weight: 600; text-decoration: none; color: var(--text-dark); margin: 0 15px; }
+        .active-tab { color: var(--confirm-blue); border-bottom: 2px solid var(--confirm-blue); }
+        main { padding: 40px; max-width: 900px; margin: 0 auto; }
+        .section { background: var(--block-bg); border-radius: 20px; padding: 25px; margin-bottom: 30px; }
+        .info-row { padding: 12px 0; border-bottom: 1px solid rgba(0,0,0,0.1); }
+        .info-label { font-weight: bold; width: 150px; display: inline-block; color: var(--text-gray); }
+        .info-value { color: var(--text-dark); }
+        .borrow-item, .history-item { padding: 12px; border-bottom: 1px solid rgba(0,0,0,0.1); }
+        .due-overdue { color: var(--overdue-red); font-weight: 800; }
+        .due-ok { color: #1e8449; font-weight: 600; }
+        .due-warn { color: #d35400; font-weight: 700; }
+        .due-urgent { color: #c0392b; font-weight: 800; }
+        .fee-note { font-size: 14px; color: #444; margin-top: 6px; font-weight: 600; }
+        .profile-legend { font-size: 13px; color: #666; margin: 0 0 12px 0; line-height: 1.5; }
+        .btn { padding: 10px 25px; border-radius: 25px; border: none; cursor: pointer; background-color: var(--confirm-blue); color: white; text-decoration: none; display: inline-block; }
+        .btn-warn { background-color: #e67e22; }
+        h1, h2 { color: var(--text-dark); }
+        .book-title { font-weight: bold; color: var(--text-dark); }
+        .empty-message { text-align: center; padding: 30px; color: var(--text-gray); }
+        .form-group { margin-bottom: 14px; }
+        label { display: block; margin-bottom: 6px; font-weight: bold; }
+        input { width: 100%; max-width: 420px; padding: 10px; border-radius: 10px; border: 1px solid #ccc; box-sizing: border-box; }
+        .hint { font-size: 14px; color: #555; margin-bottom: 10px; }
+        .notice { background: #e8f5e9; border: 1px solid #28a745; border-radius: 12px; padding: 14px; margin-bottom: 16px; }
+        .notice code { font-size: 16px; font-weight: 700; word-break: break-all; }
+        .err { background: #ffebee; border: 1px solid #c62828; color: #b71c1c; border-radius: 12px; padding: 14px; margin-bottom: 16px; }
+    </style>
+</head>
+<body>
+<div class="background"></div>
+<nav th:replace="~{fragments/nav :: navAdmin('members')}"></nav>
+<main>
+    <h1 th:text="#{admin.memberDetails}">Member Details</h1>
+
+    <div th:if="${passwordResetNotice}" class="notice">
+        <div th:text="#{admin.passwordResetFlash}">New password:</div>
+        <code th:text="${passwordResetNotice}"></code>
+    </div>
+    <div th:if="${passwordResetError}" class="err" th:text="${passwordResetError}"></div>
+
+    <div class="section">
+        <h2 th:text="#{admin.personalInfo}">Personal</h2>
+        <div class="info-row"><span class="info-label" th:text="#{admin.colId}">ID</span> <span class="info-value" th:text="${viewUser.id}"></span></div>
+        <div class="info-row"><span class="info-label" th:text="#{admin.colEmail}">Email</span> <span class="info-value" th:text="${viewUser.email}"></span></div>
+        <div class="info-row"><span class="info-label" th:text="#{admin.colName}">Name</span> <span class="info-value" th:text="${viewUser.fullName}"></span></div>
+        <div class="info-row"><span class="info-label" th:text="#{admin.colRole}">Role</span>
+            <span class="info-value" th:if="${viewUser.admin}" th:text="#{admin.roleAdmin}"></span>
+            <span class="info-value" th:if="${!viewUser.admin}" th:text="#{admin.roleUser}"></span>
+        </div>
+    </div>
+
+    <div class="section" th:if="${!viewUser.admin}">
+        <h2 th:text="#{admin.resetPasswordTitle}">Reset password</h2>
+        <p class="hint" th:text="#{admin.resetPasswordHint}"></p>
+        <form th:action="@{/admin/users/{id}/reset-password(id=${viewUser.id})}" method="post">
+            <input type="hidden" name="from" value="view">
+            <div class="form-group">
+                <label th:text="#{admin.newPasswordLabel}">New password</label>
+                <input type="text" name="newPassword" autocomplete="off">
+            </div>
+            <button type="submit" class="btn btn-warn" th:text="#{admin.resetPasswordBtn}">Reset</button>
+        </form>
+    </div>
+
+    <div class="section">
+        <h2 th:text="#{admin.currentlyBorrowed}">Current</h2>
+        <p class="profile-legend" th:text="#{profile.dueLegend}"></p>
+        <div th:if="${currentBorrows.empty}" class="empty-message" th:text="#{profile.noBorrows}">None</div>
+        <div th:each="record : ${currentBorrows}" class="borrow-item">
+            <div class="book-title"><span th:text="${record.book.title}"></span><span th:if="${record.urgencyLevel >= 1}" style="margin-left:6px;">!</span></div>
+            <div>by <span th:text="${record.book.author}"></span></div>
+            <div>📅 <span th:text="${#temporals.format(record.borrowDate, 'yyyy-MM-dd')}"></span></div>
+            <div>⏰ <span th:text="${#temporals.format(record.dueDate, 'yyyy-MM-dd')}" th:class="${record.urgencyLevel == 3} ? 'due-overdue' : (${record.urgencyLevel == 2} ? 'due-urgent' : (${record.urgencyLevel == 1} ? 'due-warn' : 'due-ok'))"></span>
+                <span th:if="${record.overdue}" class="due-overdue" style="margin-left:6px;" th:text="#{profile.overdueEx}"></span>
+            </div>
+            <div th:if="${record.overdue}" class="fee-note" th:text="#{profile.feeEstimate(${record.estimatedOverdueFeeHkd})}"></div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2 th:text="#{admin.borrowingHistory}">History</h2>
+        <div th:if="${borrowHistory.empty}" class="empty-message" th:text="#{profile.noHistory}">None</div>
+        <div th:each="record : ${borrowHistory}" class="history-item">
+            <div class="book-title" th:text="${record.book.title}"></div>
+            <div>by <span th:text="${record.book.author}"></span></div>
+            <div>📅 <span th:text="${#temporals.format(record.borrowDate, 'yyyy-MM-dd')}"></span>
+                <span th:if="${record.returned}"> | ✅ <span th:text="${#temporals.format(record.returnDate, 'yyyy-MM-dd')}"></span></span>
+                <span th:if="${!record.returned and record.overdue}" class="due-overdue" th:text="#{profile.overdueEx}"></span>
+            </div>
+        </div>
+    </div>
+
+    <a th:href="@{/admin/users}" class="btn" th:text="#{admin.backMembers}">Back</a>
+</main>
+</body>
+</html>

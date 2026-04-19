@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="#{saved.title}">Saved Books</title>
+    <style>
+        :root { --bg-image: url('https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=1200'); --block-bg: rgba(255,255,255,0.92); --edge-light-blue: #0066cc; --unsave-btn: #cc0000; --text-dark: #1a1a2e; }
+        body, html { margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+        .background { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-image) no-repeat center center/cover; z-index: -1; }
+        .upper-tool-row { display: flex; justify-content: space-between; padding: 20px 35px; background: rgba(255,255,255,0.85); backdrop-filter: blur(15px); }
+        .tab-item { font-size: 20px; font-weight: 600; text-decoration: none; color: var(--text-dark); margin: 0 15px; }
+        .active-tab { color: var(--edge-light-blue); border-bottom: 2px solid var(--edge-light-blue); }
+        .user-profile { width: 40px; height: 40px; border-radius: 50%; background: #0066cc; color: white; display: flex; align-items: center; justify-content: center; text-decoration: none; font-weight: 700; }
+        main { padding: 40px; max-width: 900px; margin: 0 auto; }
+        .page-title { font-size: 48px; font-weight: 800; margin-bottom: 40px; color: var(--text-dark); }
+        .block { background: var(--block-bg); border-radius: 20px; padding: 25px; margin-bottom: 15px; display: flex; align-items: center; gap: 20px; }
+        .book-cover { flex-shrink: 0; width: 100px; height: 140px; border-radius: 10px; overflow: hidden; background: #e0e0e0; display: flex; align-items: center; justify-content: center; }
+        .book-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .book-info { flex: 1; margin-left: 0; min-width: 0; }
+        .book-name { font-size: 28px; font-weight: 800; margin: 0; color: var(--text-dark); }
+        .author-name { font-size: 18px; color: #555; }
+        .unsave-btn { background-color: var(--unsave-btn); color: white; padding: 12px 25px; border-radius: 25px; border: none; cursor: pointer; font-weight: bold; }
+        .empty-message { text-align: center; font-size: 24px; padding: 50px; background: var(--block-bg); border-radius: 20px; }
+    </style>
+</head>
+<body>
+<div class="background"></div>
+<nav th:replace="~{fragments/nav :: navUser('saved')}"></nav>
+<main>
+    <div class="content-wrapper">
+        <h1 class="page-title" th:text="#{saved.title}">Saved Books</h1>
+        <div th:if="${savedBooks.empty}" class="empty-message" th:text="#{saved.empty}">No saved books.</div>
+        <div th:each="book : ${savedBooks}" class="block">
+            <div class="book-cover">
+                <img th:if="${book.imageUrl != null and !#strings.isEmpty(book.imageUrl)}" th:src="${book.imageUrl}" th:alt="${book.title}">
+                <span th:unless="${book.imageUrl != null and !#strings.isEmpty(book.imageUrl)}">📖</span>
+            </div>
+            <div class="book-info">
+                <h2 class="book-name" th:text="${book.title}"></h2>
+                <p class="author-name"><span th:text="#{common.by}"></span> <span th:text="${book.author}"></span></p>
+            </div>
+            <form action="/unsave" method="post"><input type="hidden" name="bookId" th:value="${book.id}"><button type="submit" class="unsave-btn" th:text="#{saved.unsave}">Unsave</button></form>
+        </div>
+    </div>
+</main>
+</body>
+</html>

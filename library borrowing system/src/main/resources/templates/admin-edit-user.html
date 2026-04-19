@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="#{admin.editMember}">Edit Member</title>
+    <style>
+        :root {
+            --bg-image: url('https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=1200');
+            --block-bg: rgba(255, 255, 255, 0.92);
+            --confirm-blue: #0066cc;
+            --text-dark: #1a1a2e;
+        }
+        body, html { margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+        .background { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-image) no-repeat center center/cover; z-index: -1; }
+        .upper-tool-row { display: flex; justify-content: space-between; padding: 20px 35px; background: rgba(255,255,255,0.85); backdrop-filter: blur(15px); }
+        .tab-item { font-size: 18px; font-weight: 600; text-decoration: none; color: var(--text-dark); margin: 0 15px; }
+        .active-tab { color: var(--confirm-blue); border-bottom: 2px solid var(--confirm-blue); }
+        main { padding: 40px; max-width: 600px; margin: 0 auto; }
+        .container { background: var(--block-bg); border-radius: 20px; padding: 30px; }
+        h1 { color: var(--text-dark); margin-bottom: 30px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: bold; color: var(--text-dark); }
+        input { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ccc; box-sizing: border-box; font-size: 16px; }
+        .btn { padding: 12px 25px; border-radius: 25px; border: none; cursor: pointer; background-color: var(--confirm-blue); color: white; font-weight: bold; font-size: 16px; margin-right: 10px; }
+        .btn-cancel { background-color: #6c757d; text-decoration: none; display: inline-block; }
+        .btn-warn { background-color: #e67e22; }
+        .btn:hover { opacity: 0.9; }
+        .notice { background: #e8f5e9; border: 1px solid #28a745; border-radius: 12px; padding: 14px; margin-bottom: 20px; }
+        .notice code { font-size: 16px; font-weight: 700; word-break: break-all; }
+        .err { background: #ffebee; border: 1px solid #c62828; color: #b71c1c; border-radius: 12px; padding: 14px; margin-bottom: 20px; }
+        .divider { margin: 28px 0; border: 0; border-top: 1px solid #ddd; }
+        .hint { font-size: 14px; color: #555; margin-bottom: 12px; }
+    </style>
+</head>
+<body>
+<div class="background"></div>
+<nav th:replace="~{fragments/nav :: navAdmin('members')}"></nav>
+<main>
+    <div class="container">
+        <h1 th:text="#{admin.editMember}">Edit Member</h1>
+
+        <div th:if="${passwordResetNotice}" class="notice">
+            <div th:text="#{admin.passwordResetFlash}">New password:</div>
+            <code th:text="${passwordResetNotice}"></code>
+        </div>
+        <div th:if="${passwordResetError}" class="err" th:text="${passwordResetError}"></div>
+
+        <form th:action="@{/admin/users/edit/{id}(id=${editUser.id})}" method="post">
+            <div class="form-group">
+                <label th:text="#{admin.colEmail}">Email</label>
+                <input type="email" name="email" th:value="${editUser.email}" required>
+            </div>
+            <div class="form-group">
+                <label th:text="#{admin.colName}">Name</label>
+                <input type="text" name="fullName" th:value="${editUser.fullName}" required>
+            </div>
+            <div class="form-group">
+                <label th:text="#{admin.passwordOptional}">Password</label>
+                <input type="password" name="password" th:attr="placeholder=#{admin.passwordOptional}">
+            </div>
+            <button type="submit" class="btn" th:text="#{editUser.save}">Save</button>
+            <a th:href="@{/admin/users}" class="btn btn-cancel" th:text="#{editBook.cancel}">Cancel</a>
+        </form>
+
+        <hr class="divider" th:if="${!editUser.admin}">
+
+        <div th:if="${!editUser.admin}">
+            <h2 style="font-size:1.1rem;color:var(--text-dark);" th:text="#{admin.resetPasswordTitle}">Reset password</h2>
+            <p class="hint" th:text="#{admin.resetPasswordHint}"></p>
+            <form th:action="@{/admin/users/{id}/reset-password(id=${editUser.id})}" method="post">
+                <input type="hidden" name="from" value="edit">
+                <div class="form-group">
+                    <label th:text="#{admin.newPasswordLabel}">New password</label>
+                    <input type="text" name="newPassword" autocomplete="off" th:attr="placeholder=#{admin.newPasswordLabel}">
+                </div>
+                <button type="submit" class="btn btn-warn" th:text="#{admin.resetPasswordBtn}">Reset</button>
+            </form>
+        </div>
+    </div>
+</main>
+</body>
+</html>
