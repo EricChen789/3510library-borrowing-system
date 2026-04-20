@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="#{search.title}">Search Books</title>
+    <style>
+        :root {
+            --bg-image: url('https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=1200');
+            --tool-row-bg: rgba(255,255,255,0.85);
+            --block-bg: rgba(255,255,255,0.92);
+            --edge-light-blue: #0066cc;
+            --borrow-btn: #0066cc;
+            --save-btn: #28a745;
+            --text-dark: #1a1a2e;
+        }
+        body, html { margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+        .background { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-image) no-repeat center center/cover; z-index: -1; }
+        .upper-tool-row { display: flex; justify-content: space-between; padding: 20px 35px; background: var(--tool-row-bg); backdrop-filter: blur(15px); }
+        .tab-item { font-size: 20px; font-weight: 600; text-decoration: none; color: var(--text-dark); margin: 0 15px; }
+        .active-tab { color: var(--edge-light-blue); border-bottom: 2px solid var(--edge-light-blue); }
+        .user-profile { width: 40px; height: 40px; border-radius: 50%; background: #0066cc; color: white; display: flex; align-items: center; justify-content: center; text-decoration: none; font-weight: 700; }
+        main { padding: 40px; max-width: 900px; margin: 0 auto; }
+        .logo { font-size: 48px; font-weight: 800; text-align: center; margin-bottom: 30px; color: var(--text-dark); }
+        .search-container { position: relative; margin-bottom: 40px; }
+        .search-bar { width: 100%; padding: 16px 20px 16px 50px; border-radius: 30px; border: 1px solid #ccc; background: var(--block-bg); font-size: 16px; box-sizing: border-box; }
+        .search-icon { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); }
+        .block { background: var(--block-bg); border-radius: 20px; padding: 25px; margin-bottom: 20px; display: flex; align-items: center; gap: 20px; }
+        .book-cover { flex-shrink: 0; width: 100px; height: 140px; border-radius: 10px; overflow: hidden; background: #e0e0e0; display: flex; align-items: center; justify-content: center; }
+        .book-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .book-info { flex: 1; margin-left: 0; min-width: 0; }
+        .book-name { font-size: 28px; font-weight: 800; margin: 0; color: var(--text-dark); }
+        .author-name { font-size: 18px; color: #555; margin: 10px 0; }
+        .available { color: #28a745; font-weight: bold; }
+        .unavailable { color: #cc0000; }
+        .borrow-btn, .save-btn { padding: 12px 25px; border-radius: 25px; font-size: 16px; font-weight: bold; border: none; cursor: pointer; margin-left: 10px; }
+        .borrow-btn { background-color: var(--borrow-btn); color: white; }
+        .save-btn { background-color: var(--save-btn); color: white; }
+        .error-message { background: #cc0000; color: white; padding: 10px; border-radius: 10px; margin-bottom: 20px; text-align: center; }
+    </style>
+</head>
+<body>
+<div class="background"></div>
+<nav th:replace="~{fragments/nav :: navUser('search')}"></nav>
+<main>
+    <div class="logo" th:text="#{search.logo}">Library Borrowing System</div>
+    <div class="search-container"><span class="search-icon">🔍</span><form action="/search" method="get"><input type="text" name="keyword" class="search-bar" th:placeholder="#{search.placeholder}" th:value="${keyword}"></form></div>
+    <div th:if="${error}" class="error-message" th:text="${error}"></div>
+    <div th:each="book : ${books}" class="block">
+        <div class="book-cover">
+            <img th:if="${book.imageUrl != null and !#strings.isEmpty(book.imageUrl)}" th:src="${book.imageUrl}" th:alt="${book.title}">
+            <span th:unless="${book.imageUrl != null and !#strings.isEmpty(book.imageUrl)}">📖</span>
+        </div>
+        <div class="book-info">
+            <h2 class="book-name" th:text="${book.title}"></h2>
+            <p class="author-name"><span th:text="#{common.by}"></span> <span th:text="${book.author}"></span></p>
+            <p th:if="${book.availableCopies > 0}" class="available">
+                <span th:text="#{search.available}"></span>: <span th:text="${book.availableCopies}"></span> <span th:text="#{search.copies}"></span>
+            </p>
+            <p th:if="${book.availableCopies <= 0}" class="unavailable" th:text="#{search.notAvailable}"></p>
+        </div>
+        <div>
+            <form action="/borrow" method="post" style="display:inline;" th:if="${book.availableCopies > 0}" onsubmit="return confirmBorrow(event);"><input type="hidden" name="bookId" th:value="${book.id}"><button type="submit" class="borrow-btn" th:text="#{search.borrow}">Borrow</button></form>
+            <form action="/save" method="post" style="display:inline;"><input type="hidden" name="bookId" th:value="${book.id}"><button type="submit" class="save-btn" th:text="#{search.save}">Save</button></form>
+        </div>
+    </div>
+</main>
+<script th:inline="javascript">
+/*<![CDATA[*/
+function confirmBorrow(ev) {
+    var days = /*[[${loanPeriodDays}]]*/ 14;
+    var d = new Date();
+    d.setDate(d.getDate() + days);
+    var y = d.getFullYear();
+    var m = ('0' + (d.getMonth() + 1)).slice(-2);
+    var day = ('0' + d.getDate()).slice(-2);
+    var dueStr = y + '-' + m + '-' + day;
+    var p1 = /*[[#{borrow.dialog.p1}]]*/ '';
+    var p2 = /*[[#{borrow.dialog.p2}]]*/ '';
+    var fees = /*[[#{borrow.dialog.fees}]]*/ '';
+    var msg = p1.replace(/\{0\}/g, String(days)) + '\n' + p2.replace(/\{0\}/g, dueStr) + '\n\n' + fees;
+    if (!window.confirm(msg)) {
+        ev.preventDefault();
+        return false;
+    }
+    return true;
+}
+/*]]>*/
+</script>
+</body>
+</html>

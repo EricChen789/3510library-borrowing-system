@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="#{admin.dashboardTitle}">Admin Dashboard</title>
+    <style>
+        :root { --bg-image: url('https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=1200'); --block-bg: rgba(255,255,255,0.92); --confirm-blue: #0066cc; --delete-red: #cc0000; --edit-green: #28a745; --text-dark: #1a1a2e; }
+        body, html { margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+        .background { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-image) no-repeat center center/cover; z-index: -1; }
+        .upper-tool-row { display: flex; justify-content: space-between; padding: 20px 35px; background: rgba(255,255,255,0.85); backdrop-filter: blur(15px); }
+        .tab-item { font-size: 18px; font-weight: 600; text-decoration: none; color: var(--text-dark); margin: 0 15px; }
+        .active-tab { color: var(--confirm-blue); border-bottom: 2px solid var(--confirm-blue); }
+        main { padding: 40px; max-width: 1200px; margin: 0 auto; }
+        .stats-container { display: grid; grid-template-columns: repeat(4,1fr); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: var(--block-bg); border-radius: 15px; padding: 20px; text-align: center; }
+        .stat-number { font-size: 36px; font-weight: bold; color: var(--confirm-blue); }
+        .section { background: var(--block-bg); border-radius: 20px; padding: 25px; margin-bottom: 30px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        .btn { padding: 6px 15px; border-radius: 20px; border: none; cursor: pointer; font-weight: bold; text-decoration: none; display: inline-block; margin: 2px; }
+        .btn-add { background-color: var(--confirm-blue); color: white; }
+        .btn-edit { background-color: var(--edit-green); color: white; }
+        .btn-delete { background-color: var(--delete-red); color: white; }
+        .add-book-form { display: grid; grid-template-columns: repeat(2,1fr); gap: 15px; }
+        .full-width { grid-column: span 2; }
+        .form-group input, .form-group textarea { width: 100%; padding: 10px; border-radius: 10px; border: 1px solid #ccc; box-sizing: border-box; }
+        h1, h2 { color: var(--text-dark); }
+        .cover-thumb { width: 48px; height: 64px; object-fit: cover; border-radius: 6px; background: #eee; display: block; }
+        .cover-placeholder { width: 48px; height: 64px; border-radius: 6px; background: #eee; display: flex; align-items: center; justify-content: center; }
+    </style>
+</head>
+<body>
+<div class="background"></div>
+<nav th:replace="~{fragments/nav :: navAdmin('dashboard')}"></nav>
+<main>
+    <h1 th:text="#{admin.dashboardTitle}">Admin Dashboard</h1>
+    <div class="stats-container">
+        <div class="stat-card"><div class="stat-number" th:text="${totalBooks}">0</div><div th:text="#{admin.totalBooks}">Total Books</div></div>
+        <div class="stat-card"><div class="stat-number" th:text="${totalUsers}">0</div><div th:text="#{admin.membersLabel}">Members</div></div>
+        <div class="stat-card"><div class="stat-number" th:text="${activeBorrows}">0</div><div th:text="#{admin.activeBorrows}">Active</div></div>
+        <div class="stat-card"><div class="stat-number" th:text="${overdueCount}">0</div><div th:text="#{admin.overdue}">Overdue</div></div>
+    </div>
+    <div class="section">
+        <h2 th:text="#{admin.addBook}">Add Book</h2>
+        <form action="/admin/books/add" method="post" class="add-book-form">
+            <div class="form-group"><input type="text" name="title" th:attr="placeholder=#{admin.placeholderTitle}" required></div>
+            <div class="form-group"><input type="text" name="author" th:attr="placeholder=#{admin.placeholderAuthor}" required></div>
+            <div class="form-group"><input type="text" name="isbn" th:attr="placeholder=#{admin.placeholderIsbn}"></div>
+            <div class="form-group"><input type="number" name="totalCopies" th:attr="placeholder=#{admin.placeholderCopies}" value="1" required></div>
+            <div class="form-group"><input type="number" name="availableCopies" th:attr="placeholder=#{admin.placeholderAvail}" value="1" required></div>
+            <div class="form-group full-width"><input type="url" name="imageUrl" th:attr="placeholder=#{admin.placeholderCover}"></div>
+            <div class="form-group full-width"><textarea name="description" rows="2" th:attr="placeholder=#{admin.placeholderDesc}"></textarea></div>
+            <div class="full-width"><button type="submit" class="btn btn-add" th:text="#{admin.addBookBtn}">Add</button></div>
+        </form>
+    </div>
+    <div class="section">
+        <h2 th:text="#{admin.books}">Books</h2>
+        <table>
+            <thead>
+            <tr>
+                <th th:text="#{admin.bookId}">ID</th>
+                <th th:text="#{admin.cover}">Cover</th>
+                <th th:text="#{admin.bookTitle}">Title</th>
+                <th th:text="#{admin.bookAuthor}">Author</th>
+                <th th:text="#{admin.bookCopies}">Copies</th>
+                <th th:text="#{admin.actions}">Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="book : ${books}">
+                <td th:text="${book.id}"></td>
+                <td>
+                    <img th:if="${book.imageUrl != null and !#strings.isEmpty(book.imageUrl)}" class="cover-thumb" th:src="${book.imageUrl}" th:alt="${book.title}">
+                    <div th:unless="${book.imageUrl != null and !#strings.isEmpty(book.imageUrl)}" class="cover-placeholder">📖</div>
+                </td>
+                <td th:text="${book.title}"></td>
+                <td th:text="${book.author}"></td>
+                <td th:text="${book.availableCopies}+'/'+${book.totalCopies}"></td>
+                <td>
+                    <a th:href="@{/admin/books/edit/{id}(id=${book.id})}" class="btn btn-edit" th:text="#{admin.edit}">Edit</a>
+                    <a th:href="@{/admin/books/delete/{id}(id=${book.id})}" class="btn btn-delete" onclick="return confirm('Delete?')" th:text="#{admin.delete}">Delete</a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+</body>
+</html>

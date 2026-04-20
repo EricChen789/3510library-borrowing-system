@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="#{admin.borrowRecords}">Borrows</title>
+    <style>
+        :root {
+            --bg-image: url('https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=1200');
+            --block-bg: rgba(255, 255, 255, 0.92);
+            --confirm-blue: #0066cc;
+            --overdue-red: #cc0000;
+            --returned-green: #28a745;
+            --text-dark: #1a1a2e;
+        }
+        body, html { margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+        .background { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-image) no-repeat center center/cover; z-index: -1; }
+        .upper-tool-row { display: flex; justify-content: space-between; padding: 20px 35px; background: rgba(255,255,255,0.85); backdrop-filter: blur(15px); }
+        .tab-item { font-size: 18px; font-weight: 600; text-decoration: none; color: var(--text-dark); margin: 0 15px; }
+        .active-tab { color: var(--confirm-blue); border-bottom: 2px solid var(--confirm-blue); }
+        main { padding: 40px; max-width: 1200px; margin: 0 auto; }
+        .section { background: var(--block-bg); border-radius: 20px; padding: 25px; margin-bottom: 30px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid rgba(0,0,0,0.1); }
+        .overdue { color: var(--overdue-red); font-weight: bold; }
+        .returned { color: var(--returned-green); font-weight: bold; }
+        h1, h2 { color: var(--text-dark); }
+        .badge-overdue { background-color: var(--overdue-red); color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px; display: inline-block; }
+        .badge-returned { background-color: var(--returned-green); color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px; display: inline-block; }
+        .badge-borrowed { background-color: var(--confirm-blue); color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px; display: inline-block; }
+    </style>
+</head>
+<body>
+<div class="background"></div>
+<nav th:replace="~{fragments/nav :: navAdmin('borrows')}"></nav>
+<main>
+    <h1 th:text="#{admin.borrowRecordsTitle}">Borrow Records</h1>
+
+    <div class="section">
+        <h2 th:text="#{admin.overdueBooks}">Overdue</h2>
+        <div th:if="${overdueBorrows.empty}" style="padding: 20px; text-align: center; color: #666;" th:text="#{admin.noOverdue}">None</div>
+        <table th:if="${not overdueBorrows.empty}">
+            <thead>
+            <tr style="background: rgba(0,0,0,0.05);">
+                <th th:text="#{admin.member}">Member</th>
+                <th th:text="#{admin.bookTitle}">Book</th>
+                <th th:text="#{admin.borrowDate}">Borrow</th>
+                <th th:text="#{admin.dueDate}">Due</th>
+                <th th:text="#{admin.status}">Status</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="record : ${overdueBorrows}">
+                <td th:text="${record.user.fullName} + ' (' + ${record.user.email} + ')'"></td>
+                <td th:text="${record.book.title}"></td>
+                <td th:text="${#temporals.format(record.borrowDate, 'yyyy-MM-dd')}"></td>
+                <td class="overdue" th:text="${#temporals.format(record.dueDate, 'yyyy-MM-dd')}"></td>
+                <td><span class="badge-overdue" th:text="#{admin.statusOverdue}">OVERDUE</span></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="section">
+        <h2 th:text="#{admin.allRecords}">All</h2>
+        <table>
+            <thead>
+            <tr style="background: rgba(0,0,0,0.05);">
+                <th th:text="#{admin.member}">Member</th>
+                <th th:text="#{admin.book}">Book</th>
+                <th th:text="#{admin.borrowDate}">Borrow</th>
+                <th th:text="#{admin.dueDate}">Due</th>
+                <th th:text="#{admin.returnDate}">Return</th>
+                <th th:text="#{admin.status}">Status</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="record : ${allBorrows}">
+                <td th:text="${record.user.fullName}"></td>
+                <td th:text="${record.book.title}"></td>
+                <td th:text="${#temporals.format(record.borrowDate, 'yyyy-MM-dd')}"></td>
+                <td th:class="${!record.returned and record.overdue ? 'overdue' : ''}" th:text="${#temporals.format(record.dueDate, 'yyyy-MM-dd')}"></td>
+                <td th:text="${record.returned ? #temporals.format(record.returnDate, 'yyyy-MM-dd') : '-'}"></td>
+                <td>
+                    <span th:if="${record.returned}" class="badge-returned" th:text="#{admin.statusReturned}">Returned</span>
+                    <span th:if="${!record.returned and record.overdue}" class="badge-overdue" th:text="#{admin.statusOverdue}">OVERDUE</span>
+                    <span th:if="${!record.returned and !record.overdue}" class="badge-borrowed" th:text="#{admin.statusBorrowed}">Borrowed</span>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+</body>
+</html>

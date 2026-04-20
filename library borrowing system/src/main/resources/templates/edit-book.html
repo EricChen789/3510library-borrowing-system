@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="#{editBook.title}">Edit Book</title>
+    <style>
+        :root {
+            --bg-image: url('https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=1200');
+            --block-bg: rgba(255, 255, 255, 0.92);
+            --confirm-blue: #0066cc;
+            --text-dark: #1a1a2e;
+        }
+        body, html { margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+        .background { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-image) no-repeat center center/cover; z-index: -1; }
+        .upper-tool-row { display: flex; justify-content: space-between; padding: 20px 35px; background: rgba(255,255,255,0.85); backdrop-filter: blur(15px); }
+        .tab-item { font-size: 18px; font-weight: 600; text-decoration: none; color: var(--text-dark); margin: 0 15px; }
+        .active-tab { color: var(--confirm-blue); border-bottom: 2px solid var(--confirm-blue); }
+        main { padding: 40px; max-width: 600px; margin: 0 auto; }
+        .container { background: var(--block-bg); border-radius: 20px; padding: 30px; }
+        h1 { color: var(--text-dark); margin-bottom: 30px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: bold; color: var(--text-dark); }
+        input, textarea { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ccc; box-sizing: border-box; font-size: 16px; }
+        .btn { padding: 12px 25px; border-radius: 25px; border: none; cursor: pointer; background-color: var(--confirm-blue); color: white; font-weight: bold; font-size: 16px; margin-right: 10px; }
+        .btn-cancel { background-color: #6c757d; text-decoration: none; display: inline-block; }
+        .btn-cancel:hover { background-color: #5a6268; }
+        .btn:hover { opacity: 0.9; }
+        .cover-preview { max-width: 160px; border-radius: 10px; margin-top: 8px; }
+    </style>
+</head>
+<body>
+<div class="background"></div>
+<nav th:replace="~{fragments/nav :: navAdmin('dashboard')}"></nav>
+<main>
+    <div class="container">
+        <h1 th:text="#{editBook.title}">Edit Book</h1>
+        <form th:action="@{/admin/books/edit/{id}(id=${book.id})}" th:object="${book}" method="post">
+            <div class="form-group">
+                <label>Title</label>
+                <input type="text" th:field="*{title}" required>
+            </div>
+            <div class="form-group">
+                <label>Author</label>
+                <input type="text" th:field="*{author}" required>
+            </div>
+            <div class="form-group">
+                <label>ISBN</label>
+                <input type="text" th:field="*{isbn}">
+            </div>
+            <div class="form-group">
+                <label th:text="#{editBook.coverUrl}">Cover URL</label>
+                <input type="url" th:field="*{imageUrl}" placeholder="https://">
+                <img th:if="${book.imageUrl != null and !#strings.isEmpty(book.imageUrl)}" class="cover-preview" th:src="${book.imageUrl}" alt="">
+            </div>
+            <div class="form-group">
+                <label>Total Copies</label>
+                <input type="number" th:field="*{totalCopies}" required>
+            </div>
+            <div class="form-group">
+                <label>Available Copies</label>
+                <input type="number" th:field="*{availableCopies}" required>
+            </div>
+            <div class="form-group">
+                <label>Description</label>
+                <textarea th:field="*{description}" rows="3"></textarea>
+            </div>
+            <button type="submit" class="btn" th:text="#{editBook.save}">Save</button>
+            <a th:href="@{/admin/dashboard}" class="btn btn-cancel" th:text="#{editBook.cancel}">Cancel</a>
+        </form>
+    </div>
+</main>
+</body>
+</html>

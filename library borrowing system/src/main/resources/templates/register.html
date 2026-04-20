@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="#{register.title}">Register</title>
+    <style>
+        :root { --bg-light-blue: #e8f0fe; --block-bg: rgba(255,255,255,0.9); --confirm-blue: #0066cc; --text-dark: #1a1a2e; }
+        body, html { margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; background-color: var(--bg-light-blue); }
+        .upper-tool-row { display: flex; justify-content: space-between; padding: 20px 35px; background: rgba(255,255,255,0.8); }
+        .tab-item { font-size: 18px; font-weight: 600; text-decoration: none; color: var(--text-dark); }
+        .active-tab { color: #0066cc; border-bottom: 3px solid #0066cc; }
+        main { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 80%; padding: 24px 0; }
+        .register-title { font-size: 42px; font-weight: 800; color: var(--text-dark); margin-bottom: 40px; }
+        .register-container { max-width: 450px; width: 100%; }
+        .input-group { margin-bottom: 20px; }
+        .input-label { font-size: 16px; color: #333; margin-bottom: 8px; display: block; font-weight: 600; }
+        .login-input { width: 100%; padding: 15px; border-radius: 12px; border: 1px solid #ccc; background: var(--block-bg); font-size: 16px; box-sizing: border-box; }
+        .btn { width: 100%; padding: 15px; border-radius: 25px; font-size: 18px; font-weight: 600; border: none; cursor: pointer; background-color: var(--confirm-blue); color: white; }
+        .error-message { color: #cc0000; text-align: center; margin-bottom: 20px; }
+        .link-back { display: block; text-align: center; margin-top: 20px; color: var(--confirm-blue); text-decoration: none; }
+    </style>
+</head>
+<body>
+<nav th:replace="~{fragments/nav :: navGuest('register')}"></nav>
+<main>
+    <h1 class="register-title" th:text="#{register.title}">Create Account</h1>
+    <div class="register-container">
+        <form th:action="@{/register}" method="post">
+            <div class="input-group"><label class="input-label" th:text="#{register.fullName}">Full Name</label><input type="text" name="fullName" class="login-input" required></div>
+            <div class="input-group"><label class="input-label" th:text="#{register.email}">Email</label><input type="email" name="email" class="login-input" required></div>
+            <div class="input-group"><label class="input-label" th:text="#{register.password}">Password</label><input type="password" name="password" class="login-input" required></div>
+            <div class="input-group"><label class="input-label" th:text="#{register.confirmPassword}">Confirm</label><input type="password" name="confirmPassword" class="login-input" required></div>
+            <div th:if="${error}" class="error-message" th:text="${error}"></div>
+            <button type="submit" class="btn" th:text="#{register.submit}">Register</button>
+        </form>
+        <a th:href="@{/login}" class="link-back" th:text="#{register.back}">← Back</a>
+    </div>
+</main>
+</body>
+</html>
